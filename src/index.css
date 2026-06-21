@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* 🌍 TARGETING THE PROJECT ROOT & GLOBAL BASE STYLES */
+:root {
+  /* You can declare project-wide native CSS variables here if needed */
+  --brand-success: #10b981;
+}
+
+body {
+  /* This applies a clean background color and font smoothing to every single page */
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-700);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 🧪 TARGETING DEFAULT HTML TAGS ACROSS ALL COMPONENTS */
+h1, h2, h3, h4 {
+  color: var(--color-slate-900);
+  font-weight: 700;
+  tracking: -0.025em;
+}
+
+input, select, textarea {
+  /* Resets focus rings globally for your forms */
+  outline: none;
+}
+
+/* 🎨 OPTIONAL: Creating global utility utility classes your students can reuse */
+.btn-primary {
+  background-color: var(--color-indigo-600);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: var(--color-indigo-700);
+  }
+}
