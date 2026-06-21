@@ -14,7 +14,7 @@ const GetEmployees = () => {
     setLoading("Loading employees...");
     setError("");
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/employees");
+      const response = await axios.get("https://milksync.alwaysdata.net/api/employees");
       setEmployees(response.data);
       console.log(response.data)
       setLoading("");
