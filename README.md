@@ -204,27 +204,51 @@ Example:
 ```
 
 ---
+---
+# API Endpoints
 
-# Employee Module
+## Departments
 
-## Add Employee
+```text
+GET    /api/departments/
+POST   /api/departments/
+```
 
-The Add Employee page allows users to:
+## Employees
 
-* Enter First Name
-* Enter Last Name
-* Enter Email Address
-* Select Department
-* Save Employee
+```text
+GET     /api/employees
+POST    /api/employees
+PUT     /api/employees/:id
+DELETE  /api/employees/:id
+```
+---
+---
+# Department Module
+
+## Add Department
+
+Allows users to:
+
+* Enter department name
+* Submit data to Django API
+* Receive success or error feedback
+
+Example payload:
+
+```javascript
+{
+  name: "Operations"
+}
+```
+
 
 Concepts used:
 
 * useState
-* useEffect
-* Controlled Components
-* Axios POST Requests
-* Dynamic Select Options
+* Axios POST
 * Form Validation
+* Conditional Rendering
 
 ```jsx
 import { useState } from "react";
@@ -318,6 +342,323 @@ export default AddDepartment;
 
 ```
 
+---
+
+## View Departments
+
+Displays departments as cards.
+
+Features:
+
+* Department count
+* Loading indicators
+* Error handling
+* Responsive grid layout
+
+Concepts used:
+
+* useEffect
+* Axios GET
+* CSS Grid
+* Array map()
+* Conditional Rendering
+
+```jsx
+import axios from "axios";
+import { useEffect, useState } from "react";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
+const GetDepartment = () => {
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState("");
+  const [error, setError] = useState("");
+
+  const getDepartments = async () => {
+    setLoading("Loading departments...");
+    setError("");
+
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/api/departments/"
+      );
+
+      console.log(response);
+      setDepartments(response.data);
+      setLoading("");
+    } catch (err) {
+      console.log(err);
+      setLoading("");
+      setError("Failed to load departments.");
+    }
+  };
+
+  useEffect(() => {
+    getDepartments();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800">Departments</h1>
+        <span className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600">
+          Total: {departments.length}
+        </span>
+      </div>
+
+      {loading && (
+        <p className="mb-4 flex items-center gap-2 text-sm font-medium text-indigo-500 animate-pulse">
+          <i className="bi bi-arrow-repeat animate-spin"></i>
+          {loading}
+        </p>
+      )}
+
+      {error && (
+        <p className="mb-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 p-2.5 text-sm font-medium text-red-600">
+          <i className="bi bi-exclamation-circle-fill"></i>
+          {error}
+        </p>
+      )}
+
+      {departments.length === 0 && !loading ? (
+        <div className="rounded-xl border border-gray-100 bg-white p-10 text-center text-gray-400">
+          No departments found.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {departments.map((dept) => (
+            <div key={dept.id}
+              className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                  <i className="bi bi-building text-lg"></i>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Department</p>
+                  <h2 className="text-lg font-semibold text-gray-800">{dept.name}</h2>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-xs text-gray-400">Department ID</p>
+                <p className="mt-1 font-mono text-sm text-gray-600">#{dept.id}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default GetDepartment;
+```
+---
+
+# Employee Module
+
+## Add Employee
+
+The Add Employee page allows users to:
+
+* Enter First Name
+* Enter Last Name
+* Enter Email Address
+* Select Department
+* Save Employee
+
+Concepts used:
+
+* useState
+* useEffect
+* Controlled Components
+* Axios POST Requests
+* Dynamic Select Options
+* Form Validation
+
+```jsx
+import { useState, useEffect } from "react";
+import axios from "axios";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
+const AddRegisterEmployee = () => {
+  // form states
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [department, setDepartment] = useState("");
+
+  // extra UI states
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  // fetch departments
+  const getDepartments = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/departments/");
+      setDepartments(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getDepartments();
+  }, []);
+
+  // submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setLoading("Saving employee...");
+    setSuccess("");
+    setError("");
+
+    try {
+      const payload = {
+        first_name,
+        last_name,
+        email,
+        department_id:department,
+      };
+
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/employees",
+        payload
+      );
+
+      console.log(response);
+
+      setLoading("");
+      setSuccess(`Employee ${response.data.first_name} created successfully!`);
+
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setDepartment("");
+    } catch (err) {
+      setLoading("");
+      setError(err.message);
+      console.log(err);
+    }
+  };
+
+  return (
+    <div className="flex min-h-[70vh] items-center justify-center bg-gray-50 p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-xl rounded-xl bg-white p-6 shadow-sm border border-gray-100 space-y-4"
+      >
+        <div className="border-b border-gray-100 pb-2">
+          <h2 className="text-xl font-bold text-gray-800">Add Employee</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Register a new employee and assign them to a department.
+          </p>
+        </div>
+
+        {/* Dynamic Status Alert banners */}
+        {loading && (
+          <p className="text-sm font-medium text-indigo-500 animate-pulse flex items-center gap-2">
+            <i className="bi bi-arrow-repeat animate-spin"></i>
+            {loading}
+          </p>
+        )}
+
+        {success && (
+          <p className="text-sm font-medium text-emerald-600 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100 flex items-center gap-2">
+            <i className="bi bi-check-circle-fill"></i>
+            {success}
+          </p>
+        )}
+
+        {error && (
+          <p className="text-sm font-medium text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100 flex items-center gap-2">
+            <i className="bi bi-exclamation-circle-fill"></i>
+            Error: {error}
+          </p>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              First Name
+            </label>
+            <input
+              type="text"
+              placeholder="Enter first name"
+              value={first_name}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full border border-gray-200 p-2.5 text-sm rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              Last Name
+            </label>
+            <input
+              type="text"
+              placeholder="Enter last name"
+              value={last_name}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full border border-gray-200 p-2.5 text-sm rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Email Address
+          </label>
+          <input
+            type="email"
+            placeholder="employee@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-200 p-2.5 text-sm rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
+            required
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Department
+          </label>
+          <select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            className="w-full border border-gray-200 p-2.5 text-sm rounded-lg bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
+            required
+          >
+            <option value="">Select Department</option>
+
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 text-white p-2.5 text-sm font-medium rounded-lg hover:bg-indigo-700 shadow-xs cursor-pointer transition duration-150"
+        >
+          Save Employee
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default AddRegisterEmployee;
+```
+
 Example payload:
 
 ```javascript
@@ -351,7 +692,7 @@ Concepts used:
 ```jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // ⚛️ For moving data to the Edit component
+import { useNavigate } from "react-router-dom"; //  For moving data to the Edit component
 
 const GetEmployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -365,7 +706,7 @@ const GetEmployees = () => {
     setLoading("Loading employees...");
     setError("");
     try {
-      const response = await axios.get("https://milksync.alwaysdata.net/api/employees");
+      const response = await axios.get("http://127.0.0.1:8000/api/employees");
       setEmployees(response.data);
       console.log(response.data)
       setLoading("");
@@ -758,272 +1099,10 @@ const EditEmployee = () => {
 
 export default EditEmployee;
 ```
----
-
-# Department Module
-
-## Add Department
-
-Allows users to:
-
-* Enter department name
-* Submit data to Django API
-* Receive success or error feedback
-
-Example payload:
-
-```javascript
-{
-  name: "Operations"
-}
-```
-
-
-Concepts used:
-
-* useState
-* Axios POST
-* Form Validation
-* Conditional Rendering
-
-```jsx
-import { useState } from "react";
-import axios from "axios";
-
-const AddDepartment = () => {
-  // form state matching your Django Department model schema
-  const [name, setName] = useState("");
-
-  // extra UI feedback states
-  const [loading, setLoading] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-
-  // submit handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setLoading("Creating department...");
-    setSuccess("");
-    setError("");
-
-    try {
-      // ⚛️ Teaching Point: Django REST Framework's DefaultRouter 
-      // expects data sent to the trailing slash endpoint: /departments/
-      const payload = { name: name };
-
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/departments/",
-        payload
-      );
-
-      console.log(response);
-
-      setLoading("");
-      setSuccess(`Department "${response.data.name}" created successfully!`);
-      
-      // clear text input cleanly
-      setName("");
-    } catch (err) {
-      setLoading("");
-      // Safely catch validation errors returned by DRF or fallback to generic message
-      const serverErrorMessage = err.response?.data?.name?.[0] || err.message;
-      setError(serverErrorMessage);
-      console.log(err);
-    }
-  };
-
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center bg-gray-50 p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-sm border border-gray-100 space-y-4"
-      >
-        <div className="border-b border-gray-100 pb-2">
-          <h2 className="text-xl font-bold text-gray-800">Add Department</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Create a new organizational category for employees.</p>
-        </div>
-
-        {/* Dynamic Status Alert banners */}
-        {loading && <p className="text-sm font-medium text-indigo-500 animate-pulse">⏳ {loading}</p>}
-        {success && <p className="text-sm font-medium text-emerald-600 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">✅ {success}</p>}
-        {error && <p className="text-sm font-medium text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100">❌ Error: {error}</p>}
-
-        <div className="space-y-1">
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            Department Name
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. Operations, Quality Assurance, Procurement"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-200 p-2.5 text-sm rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white p-2.5 text-sm font-medium rounded-lg hover:bg-indigo-700 shadow-xs cursor-pointer transition duration-150"
-        >
-          Save Department
-        </button>
-      </form>
-    </div>
-  );
-};
-
-export default AddDepartment;
-
-```
 
 ---
 
-## View Departments
 
-Displays departments as cards.
-
-Features:
-
-* Department count
-* Loading indicators
-* Error handling
-* Responsive grid layout
-
-Concepts used:
-
-* useEffect
-* Axios GET
-* CSS Grid
-* Array map()
-* Conditional Rendering
-
-```jsx
-import axios from "axios";
-import { useEffect, useState } from "react";
-import "bootstrap-icons/font/bootstrap-icons.css";
-
-const GetDepartment = () => {
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState("");
-  const [error, setError] = useState("");
-
-  const getDepartments = async () => {
-    setLoading("Loading departments...");
-    setError("");
-
-    try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/departments/"
-      );
-
-      console.log(response);
-      setDepartments(response.data);
-      setLoading("");
-    } catch (err) {
-      console.log(err);
-      setLoading("");
-      setError("Failed to load departments.");
-    }
-  };
-
-  useEffect(() => {
-    getDepartments();
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Departments
-        </h1>
-
-        <span className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600">
-          Total: {departments.length}
-        </span>
-      </div>
-
-      {loading && (
-        <p className="mb-4 flex items-center gap-2 text-sm font-medium text-indigo-500 animate-pulse">
-          <i className="bi bi-arrow-repeat animate-spin"></i>
-          {loading}
-        </p>
-      )}
-
-      {error && (
-        <p className="mb-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 p-2.5 text-sm font-medium text-red-600">
-          <i className="bi bi-exclamation-circle-fill"></i>
-          {error}
-        </p>
-      )}
-
-      {departments.length === 0 && !loading ? (
-        <div className="rounded-xl border border-gray-100 bg-white p-10 text-center text-gray-400">
-          No departments found.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-          {departments.map((dept) => (
-            <div
-              key={dept.id}
-              className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md"
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                  <i className="bi bi-building text-lg"></i>
-                </div>
-
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Department
-                  </p>
-
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {dept.name}
-                  </h2>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-3">
-                <p className="text-xs text-gray-400">
-                  Department ID
-                </p>
-
-                <p className="mt-1 font-mono text-sm text-gray-600">
-                  #{dept.id}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default GetDepartment;
-```
-
----
-
-# API Endpoints
-
-## Departments
-
-```text
-GET    /api/departments/
-POST   /api/departments/
-```
-
-## Employees
-
-```text
-GET     /api/employees
-POST    /api/employees
-PUT     /api/employees/:id
-DELETE  /api/employees/:id
-```
 
 ---
 

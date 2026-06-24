@@ -19,7 +19,7 @@ const AddDepartment = () => {
     setError("");
 
     try {
-      // ⚛️ Teaching Point: Django REST Framework's DefaultRouter 
+      //  Teaching Point: Django REST Framework's DefaultRouter 
       // expects data sent to the trailing slash endpoint: /departments/
       const payload = { name: name };
 
@@ -56,7 +56,7 @@ const AddDepartment = () => {
         </div>
 
         {/* Dynamic Status Alert banners */}
-        {loading && <p className="text-sm font-medium text-indigo-500 animate-pulse">⏳ {loading}</p>}
+        {loading && <p className="text-sm font-medium text-indigo-500 animate-pulse"> {loading}</p>}
         {success && <p className="text-sm font-medium text-emerald-600 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">✅ {success}</p>}
         {error && <p className="text-sm font-medium text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100">❌ Error: {error}</p>}
 
